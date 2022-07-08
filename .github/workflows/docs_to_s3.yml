@@ -32,8 +32,10 @@ jobs:
           
       # Build the docs
       - name: Sphinx build
-        shell: bash -l {0}
-        run: sphinx-build docs/source docs/html
+        shell: bash
+        run: |
+          cd docs
+          make html
 
       # Sync the built docs to s3
       - uses: jakejarvis/s3-sync-action@master
