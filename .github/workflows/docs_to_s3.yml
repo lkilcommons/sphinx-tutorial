@@ -33,15 +33,12 @@ jobs:
           python-version: 3.8
           auto-activate-base: false
           
-      # Build the package
+      # Install the package and build docs
       - name:  Run setup.py
         shell: bash -l {0}
-        run: python setup.py install
-        
-      # Build the docs
-      - name: Sphinx build
-        shell: bash -l {0}
-        run: sphinx-build docs/source docs/html
+        run: |
+          python setup.py install
+          sphinx-build docs/source docs/html
 
       # Sync the built docs to s3
       - uses: jakejarvis/s3-sync-action@master
