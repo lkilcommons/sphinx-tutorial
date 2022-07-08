@@ -33,6 +33,11 @@ jobs:
           python-version: 3.8
           auto-activate-base: false
           
+      # Build the package
+      - name:  Run setup.py
+        shell: bash -l {0}
+        run: python setup.py install
+        
       # Build the docs
       - name: Sphinx build
         shell: bash -l {0}
@@ -41,7 +46,7 @@ jobs:
       # Sync the built docs to s3
       - uses: jakejarvis/s3-sync-action@master
         with:
-          args: --acl public-read --follow-symlinks --delete
+          args: --follow-symlinks --delete
         env:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
