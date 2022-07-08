@@ -3,5 +3,4 @@ name: sphinxtutorial
 dependencies:
   - python=3.8
   - numpy
-  - sphinx-gallery
   - sphinx_rtd_theme
