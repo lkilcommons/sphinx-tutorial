@@ -67,7 +67,7 @@ jobs:
           BUCKET_NAME_STEM: sphinxtutorials3test
           PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
-          BUCKET=$BUCKET_NAME_STEM$PR_BRANCH_NAME
+          BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
           aws s3 mb s3://$BUCKET --region us-west-2
           #Define index and error HTML files which will be landing and 4xx error pages
           aws s3 website s3://$BUCKET \
@@ -87,6 +87,10 @@ jobs:
       # Copy over the website
       - name:  Run setup.py
         shell: bash -l {0}
+        env:
+          BUCKET_NAME_STEM: sphinxtutorials3test
+          PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
+          BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
           aws s3 cp $GITHUB_WORKSPACE/docs/html s3://$BUCKET --recursive
           echo "http://$BUCKET.s3-website.us-west-2.amazonaws.com"
