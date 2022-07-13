@@ -93,4 +93,14 @@ jobs:
         run: |
           BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
           aws s3 cp $GITHUB_WORKSPACE/docs/html s3://$BUCKET --recursive
-          echo "http://$BUCKET.s3-website.us-west-2.amazonaws.com"
+          echo ""
+      
+      #Report the built URL
+      - uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUCKET_NAME_STEM: sphinxtutorials3test
+          PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+        with:
+          message: http://${{ env.BUCKET_NAME_STEM }}-${{ env.PR_BRANCH_NAME }}.s3-website.us-west-2.amazonaws.com
+          allow-repeats: true
