@@ -16,6 +16,8 @@ What is it?
 Haversine is a simple library for calculating the shortest distance between
 two points on the surface of a sphere (the great circle distance)
 
+It is also a demonstration of how to use Sphinx to document a Python package
+
 API
 ---
 
