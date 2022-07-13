@@ -80,7 +80,7 @@ jobs:
         shell: bash -l {0}
         env:
           BUCKET_NAME_STEM: sphinxtutorials3test
-          PR_BRANCH_NAME: github.event.pull_request.head.ref
+          PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
           BUCKET=$BUCKET_NAME_STEM$PR_BRANCH_NAME
           aws s3 mb s3://$BUCKET --region us-west-2
