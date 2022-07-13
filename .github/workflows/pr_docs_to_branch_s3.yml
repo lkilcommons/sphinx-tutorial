@@ -85,7 +85,7 @@ jobs:
                   --policy file://policy.json
       
       # Copy over the website
-      - name:  Run setup.py
+      - name:  Copy over website
         shell: bash -l {0}
         env:
           BUCKET_NAME_STEM: sphinxtutorials3test
