@@ -19,7 +19,7 @@ two points on the surface of a sphere (the great circle distance)
 This is a test
 --------------
 
-ABC1234567
+ABC12345678
 
 API
 ---
