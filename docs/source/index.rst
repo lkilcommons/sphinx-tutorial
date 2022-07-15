@@ -14,7 +14,9 @@ What is it?
 -----------
 
 Haversine is a simple library for calculating the shortest distance between
-two points on the surface of a sphere (the great circle distance)
+two points on the surface of a sphere (the great circle distance).
+
+This text was added in a pull request
 
 API
 ---
