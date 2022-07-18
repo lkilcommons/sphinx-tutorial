@@ -20,6 +20,15 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Set and clean the bucket name
+        run: |
+          #Define the bucket name
+          BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
+          # Sub out underscores since that's forbidden in S3 names
+          BUCKET=${BUCKET/_/-}
+          # Add to environment
+          echo BUCKET=$BUCKET >> $GITHUB_ENV      
+    
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       
@@ -71,9 +80,6 @@ jobs:
       - name:  Create bucket if nessecary
         shell: bash -l {0}
         run: |
-          #Define the bucket name
-          BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
-          BUCKET=${BUCKET/_/-} # Sub out underscores since that's forbidden in S3 names
           if aws s3api head-bucket --bucket $BUCKET ; then
             echo "$BUCKET already exists! Cleaning it up..."
             aws s3 rm s3://$BUCKET --recursive
@@ -101,8 +107,6 @@ jobs:
       - name:  Copy over website
         shell: bash -l {0}
         run: |
-          BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
-          BUCKET=${BUCKET/_/-} # Sub out underscores since that's forbidden in S3 names
           aws s3 cp $GITHUB_WORKSPACE/docs/html s3://$BUCKET --recursive
           
       #Report the built URL
@@ -110,5 +114,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          message: http://${{ env.BUCKET_NAME_STEM }}-${{ env.PR_BRANCH_NAME }}.s3-website.us-west-2.amazonaws.com
+          message: http://${{ env.BUCKET }}.s3-website.us-west-2.amazonaws.com
           allow-repeats: true
