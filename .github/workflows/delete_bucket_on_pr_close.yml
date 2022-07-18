@@ -6,7 +6,7 @@ on:
   # Triggers the workflow on pull request events but only for the "main" branch
   pull_request:
     branches: [ "main" ]
-    types: [ "close" ]
+    types: [ "closed" ]
 
 env:
   #These two values determine how bucket will be named
