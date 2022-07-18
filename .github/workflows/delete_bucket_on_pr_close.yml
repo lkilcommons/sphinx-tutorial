@@ -36,7 +36,7 @@ jobs:
           BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
           #All files/objects must be deleted before bucket will delete
           aws s3 rm s3://$BUCKET --recursive
-          aws s3 delete-bucket --bucket $BUCKET
+          aws s3api delete-bucket --bucket $BUCKET
       
       #Report the deletetion and URL to check for confirmation
       - uses: mshick/add-pr-comment@v1
