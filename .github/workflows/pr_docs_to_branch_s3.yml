@@ -70,7 +70,7 @@ jobs:
         run: |
           #Define the bucket name
           BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
-          if [ aws s3api head-bucket --bucket $BUCKET ] ; then
+          if aws s3api head-bucket --bucket $BUCKET ; then
             echo "$BUCKET already exists! Cleaning it up..."
             aws s3 rm s3://$BUCKET --recursive
           else
