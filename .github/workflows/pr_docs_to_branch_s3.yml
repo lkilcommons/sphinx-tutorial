@@ -73,6 +73,7 @@ jobs:
         run: |
           #Define the bucket name
           BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
+          BUCKET=${BUCKET/_/-} # Sub out underscores since that's forbidden in S3 names
           if aws s3api head-bucket --bucket $BUCKET ; then
             echo "$BUCKET already exists! Cleaning it up..."
             aws s3 rm s3://$BUCKET --recursive
@@ -101,6 +102,7 @@ jobs:
         shell: bash -l {0}
         run: |
           BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
+          BUCKET=${BUCKET/_/-} # Sub out underscores since that's forbidden in S3 names
           aws s3 cp $GITHUB_WORKSPACE/docs/html s3://$BUCKET --recursive
           
       #Report the built URL
