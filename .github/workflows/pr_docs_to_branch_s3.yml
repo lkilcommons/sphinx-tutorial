@@ -38,6 +38,7 @@ jobs:
         with:
           activate-environment: sphinxtutorial
           environment-file: environment.yml
+          mamba-version: "*"
           python-version: 3.8
           auto-activate-base: false
           
