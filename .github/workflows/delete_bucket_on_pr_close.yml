@@ -37,4 +37,12 @@ jobs:
           #All files/objects must be deleted before bucket will delete
           aws s3 rm s3://$BUCKET --recursive
           aws s3 delete-bucket --bucket $BUCKET
+      
+      #Report the deletetion and URL to check for confirmation
+      - uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          message: Deleted bucket, URL (http://${{ env.BUCKET_NAME_STEM }}-${{ env.PR_BRANCH_NAME }}.s3-website.us-west-2.amazonaws.com) should now 404
+          allow-repeats: true
     
