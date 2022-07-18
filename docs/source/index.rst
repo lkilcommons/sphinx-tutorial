@@ -18,6 +18,8 @@ two points on the surface of a sphere (the great circle distance)
 
 This change was made in a PR with an illegal character (_) for S3 bucket names in the branch name
 
+This was added in a subsequent commit
+
 API
 ---
 
