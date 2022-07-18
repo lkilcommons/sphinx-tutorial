@@ -1,12 +1,16 @@
 
 # This is a basic workflow to help you get started with Actions
-
 name: Deploy pull-request draft to S3 static site with PR branch name
 
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Triggers the workflow on pull request events but only for the "main" branch
   pull_request:
     branches: [ "main" ]
+
+env:
+  #These two values determine how bucket will be named
+  BUCKET_NAME_STEM: sphinxtutorials3test
+  PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
 
 jobs:
   deploy:
@@ -61,46 +65,45 @@ jobs:
           json: '{"Version": "2012-10-17","Statement": [{"Sid": "PublicReadGetObject","Effect": "Allow","Principal": "*","Action": ["s3:GetObject"],"Resource": ["arn:aws:s3:::BUCKET/*"]}]}'
       
       #Create bucket
-      - name:  Create Bucket
+      - name:  Create bucket if nessecary
         shell: bash -l {0}
-        env:
-          BUCKET_NAME_STEM: sphinxtutorials3test
-          PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
+          #Define the bucket name
           BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
-          aws s3 mb s3://$BUCKET --region us-west-2
-          #Define index and error HTML files which will be landing and 4xx error pages
-          aws s3 website s3://$BUCKET \
-                  --index-document index.html \
-                  --error-document error.html
-          #Disable safeguards against accidently or via side-effect enabling public access
-          aws s3api put-public-access-block \
-                  --bucket $BUCKET \
-                  --public-access-block-configuration 'BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false'
-          #Replace the bucket name placeholder in the policy json file
-          cat policy_template.json | sed "s/BUCKET/$BUCKET/g" > policy.json
-          #Explictly allow public GET requests via the policy file
-          aws s3api put-bucket-policy \
-                  --bucket $BUCKET \
-                  --policy file://policy.json
+          if [ aws s3api head-bucket --bucket $BUCKET ] ; then
+            echo "$BUCKET already exists! Cleaning it up..."
+            aws s3 rm s3://$BUCKET --recursive
+          else
+            #Create the bucket
+            aws s3 mb s3://$BUCKET --region us-west-2
+            #Define index and error HTML files which will be landing and 4xx error pages
+            aws s3 website s3://$BUCKET \
+                    --index-document index.html \
+                    --error-document error.html
+            #Disable safeguards against accidently or via side-effect enabling public access
+            aws s3api put-public-access-block \
+                    --bucket $BUCKET \
+                    --public-access-block-configuration 'BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false'
+            #Replace the bucket name placeholder in the policy json file
+            cat policy_template.json | sed "s/BUCKET/$BUCKET/g" > policy.json
+            #Explictly allow public GET requests via the policy file
+            aws s3api put-bucket-policy \
+                    --bucket $BUCKET \
+                    --policy file://policy.json
+            echo "Created S3 bucket $BUCKET"
+          fi
       
       # Copy over the website
       - name:  Copy over website
         shell: bash -l {0}
-        env:
-          BUCKET_NAME_STEM: sphinxtutorials3test
-          PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
           BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
           aws s3 cp $GITHUB_WORKSPACE/docs/html s3://$BUCKET --recursive
-          echo ""
-      
+          
       #Report the built URL
       - uses: mshick/add-pr-comment@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUCKET_NAME_STEM: sphinxtutorials3test
-          PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         with:
           message: http://${{ env.BUCKET_NAME_STEM }}-${{ env.PR_BRANCH_NAME }}.s3-website.us-west-2.amazonaws.com
           allow-repeats: true
