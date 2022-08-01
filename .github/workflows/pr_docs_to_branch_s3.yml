@@ -12,7 +12,12 @@ env:
   #These two values determine how bucket will be named
   BUCKET_NAME_STEM: sphinxtutorials3test
   PR_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-
+  #These values are used to generate the S3 policy from a template
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  MISSION_IP_BLOCK: ${{ secrets.MISSION_IP_BLOCK }}
+  CU_IP_BLOCK1: ${{ secrets.CU_IP_BLOCK1 }}
+  CU_IP_BLOCK2: ${{ secrets.CU_IP_BLOCK2 }}
+  
 jobs:
   deploy:
     # The type of runner that the job will run on
@@ -70,12 +75,55 @@ jobs:
           
       #Create the bucket AWS policy file 
       - name: create-json
-        id: create-json
-        uses: jsdaniell/create-json@1.1.2
-        with:
-          name: "policy_template.json"
-          json: '{"Version": "2012-10-17","Statement": [{"Sid": "PublicReadGetObject","Effect": "Allow","Principal": "*","Action": ["s3:GetObject"],"Resource": ["arn:aws:s3:::BUCKET/*"]}]}'
-      
+        shell: bash
+        run: |
+          cat > policy.json << EOF
+          {
+          "Version": "2012-10-17",
+          "Statement": [
+                  {
+                          "Sid": "GithubActionsUserAllow",
+                          "Effect": "Allow",
+                          "Condition": {
+                                  "NotStringLike": {
+                                          "aws:userId": [
+                                                  "AIDA$AWS_ACCESS_KEY_ID"
+                                          ]
+                                  }
+                          },
+                          "Principal": "*",
+                          "Action": [
+                                  "s3:*"
+                          ],
+                          "Resource": [
+                                  "arn:aws:s3:::$BUCKET",
+                                  "arn:aws:s3:::$BUCKET/*"
+                          ]
+                  },
+                  {
+                          "Sid": "VPNReadGetObject",
+                          "Effect": "Allow",
+                          "Condition": {
+                                  "IpAddress": {
+                                          "aws:SourceIp": [
+                                                  "$MISSION_IP_BLOCK",
+                                                  "$CU_IP_BLOCK1",
+                                                  "$CU_IP_BLOCK2"
+                                          ]
+                                  }
+                          },
+                          "Principal": "*",
+                          "Action": [
+                                  "s3:GetObject"
+                          ],
+                          "Resource": [
+                                  "arn:aws:s3:::$BUCKET/*"
+                          ]
+                  } 
+            ]
+          }
+          EOF
+          
       #Create bucket
       - name:  Create bucket if nessecary
         shell: bash -l {0}
@@ -91,12 +139,10 @@ jobs:
                     --index-document index.html \
                     --error-document error.html
             #Disable safeguards against accidently or via side-effect enabling public access
-            aws s3api put-public-access-block \
-                    --bucket $BUCKET \
-                    --public-access-block-configuration 'BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false'
-            #Replace the bucket name placeholder in the policy json file
-            cat policy_template.json | sed "s/BUCKET/$BUCKET/g" > policy.json
-            #Explictly allow public GET requests via the policy file
+            #aws s3api put-public-access-block \
+            #        --bucket $BUCKET \
+            #        --public-access-block-configuration 'BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false'
+            #Explictly allow GET from VPN and Github Actions IAM user via the policy file
             aws s3api put-bucket-policy \
                     --bucket $BUCKET \
                     --policy file://policy.json
