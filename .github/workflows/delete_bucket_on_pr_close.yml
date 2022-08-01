@@ -34,7 +34,7 @@ jobs:
         run: |
           #Define the bucket name
           BUCKET=$BUCKET_NAME_STEM-$PR_BRANCH_NAME
-          BUCKET=${BUCKET/_/-} # Sub out underscores since that's forbidden in S3 names
+          BUCKET=${BUCKET//_/-} # Sub out underscores since that's forbidden in S3 names
           #All files/objects must be deleted before bucket will delete
           aws s3 rm s3://$BUCKET --recursive
           aws s3api delete-bucket --bucket $BUCKET
