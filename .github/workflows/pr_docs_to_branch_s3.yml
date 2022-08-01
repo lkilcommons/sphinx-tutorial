@@ -85,7 +85,7 @@ jobs:
                           "Sid": "GithubActionsUserAllow",
                           "Effect": "Allow",
                           "Condition": {
-                                  "NotStringLike": {
+                                  "StringLike": {
                                           "aws:userId": [
                                                   "AIDA$AWS_ACCESS_KEY_ID"
                                           ]
