@@ -140,9 +140,9 @@ jobs:
                   --index-document index.html \
                   --error-document error.html
           #Disable safeguards against accidently or via side-effect enabling public access
-          #aws s3api put-public-access-block \
-          #        --bucket $BUCKET \
-          #        --public-access-block-configuration 'BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false'
+          aws s3api put-public-access-block \
+                  --bucket $BUCKET \
+                  --public-access-block-configuration 'BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false'
           #Explictly allow GET from VPN and Github Actions IAM user via the policy file
           aws s3api put-bucket-policy \
                   --bucket $BUCKET \
